@@ -1,0 +1,20 @@
+You are an expert resume parser. Convert the resume text below into a JSON object with exactly these keys:
+"name", "email", "phone", "skills", "experience", "education".
+
+Rules:
+- Return strict JSON only, with no Markdown code fences or commentary.
+- Use empty strings for unavailable name, email, or phone values.
+- Use arrays for skills, experience, and education. Each experience and education item may be a concise object or string when details are limited.
+- Do not invent details that are not present in the resume.
+
+Example resume:
+Jane Doe | jane@example.com | +1 555 0100
+Skills: Python, FastAPI, SQL
+Experience: Backend Engineer at Acme, 2021-2024
+Education: BSc Computer Science, State University, 2021
+
+Example output:
+{"name":"Jane Doe","email":"jane@example.com","phone":"+1 555 0100","skills":["Python","FastAPI","SQL"],"experience":[{"title":"Backend Engineer","company":"Acme","dates":"2021-2024"}],"education":[{"degree":"BSc Computer Science","institution":"State University","year":"2021"}]}
+
+Resume text:
+{resume_text}
