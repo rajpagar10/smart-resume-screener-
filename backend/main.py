@@ -14,13 +14,13 @@ from sqlalchemy.orm import Session
 
 try:  # Supports both package and `backend/` working-directory launches.
     from .database import get_db, initialize_database
-    from .llm_client import GroqClient, LLMClientError
+    from .llm_client import ClaudeClient, LLMClientError
     from .matcher import MatchData, MatchError, match_resume
     from .models import Candidate, JobDescription, MatchResult
     from .resume_parser import ResumeData, ResumeParseError, extract_text_from_bytes, parse_resume_text
 except ImportError:  # pragma: no cover - import fallback for `uvicorn main:app`
     from database import get_db, initialize_database
-    from llm_client import GroqClient, LLMClientError
+    from llm_client import ClaudeClient, LLMClientError
     from matcher import MatchData, MatchError, match_resume
     from models import Candidate, JobDescription, MatchResult
     from resume_parser import ResumeData, ResumeParseError, extract_text_from_bytes, parse_resume_text
@@ -203,7 +203,7 @@ async def upload_resumes(
 
 @app.post("/evaluate", response_model=EvaluationResponse)
 def evaluate_resumes(session: Session = Depends(get_db)) -> EvaluationResponse:
-    """Run Groq extraction and matching for every resume against the current job."""
+    """Run Claude extraction and matching for every resume against the current job."""
     job = _latest_job_description(session)
     if job is None:
         raise HTTPException(status_code=400, detail="Upload a job description before evaluating resumes.")
@@ -212,7 +212,7 @@ def evaluate_resumes(session: Session = Depends(get_db)) -> EvaluationResponse:
         raise HTTPException(status_code=400, detail="Upload at least one resume before evaluating.")
 
     try:
-        client = GroqClient()
+        client = ClaudeClient()
     except LLMClientError as exc:
         return EvaluationResponse(evaluated=0, failed=len(candidates), errors=[str(exc)])
 

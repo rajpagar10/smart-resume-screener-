@@ -38,7 +38,7 @@ def client(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     database.configure_database(f"sqlite:///{tmp_path / 'test.db'}")
     database.initialize_database(seed_demo=False)
     monkeypatch.setattr(main, "initialize_database", lambda seed_demo=True: None)
-    monkeypatch.setattr(main, "GroqClient", FakeClaudeClient)
+    monkeypatch.setattr(main, "ClaudeClient", FakeClaudeClient)
     with TestClient(main.app) as test_client:
         yield test_client
     database.engine.dispose()

@@ -1,8 +1,8 @@
 # Smart Resume Screener
 
-Smart Resume Screener is a lightweight, full-stack applicant-screening tool. It accepts PDF or UTF-8 text resumes and a job description, uses Groq's fast free developer tier to turn resumes into structured evidence, and produces a recruiter-readable 1–10 fit score with matched and missing skills. The dashboard highlights candidates scoring 7 or higher.
+Smart Resume Screener is a lightweight, full-stack applicant-screening tool. It accepts PDF or UTF-8 text resumes and a job description, uses Claude Sonnet 4.6 to turn resumes into structured evidence, and produces a recruiter-readable 1–10 fit score with matched and missing skills. The dashboard highlights candidates scoring 7 or higher.
 
-The repository starts with one demo job description and three tiny built-in demo resumes/results, so the ranked dashboard is useful immediately. Live evaluation requires a free-tier Groq API key; it is rate-limited and subject to Groq's current free-tier terms.
+The repository starts with one demo job description and three tiny built-in demo resumes/results, so the ranked dashboard is useful immediately. Live evaluation requires an Anthropic API key with available API credits.
 
 ## Architecture
 
@@ -15,10 +15,10 @@ PDF/TXT resumes + JD
         ├── PDF/TXT text parser (pdfplumber / UTF-8)
         │          │
         │          ▼
-        │  Groq extraction ──► structured resume JSON
+        │  Claude extraction ──► structured resume JSON
         │                              │
         │                              ▼
-        └──────────────────────► Groq matching (score + rationale)
+        └──────────────────────► Claude matching (score + rationale)
                                        │
                                        ▼
                                   SQLite / SQLAlchemy
@@ -114,13 +114,13 @@ Prerequisites: Python 3.10+ and Node.js 18+.
    pip install -r backend/requirements.txt
    ```
 
-2. Create a free Groq API key in the [Groq Console](https://console.groq.com/keys), then set it in the shell that starts FastAPI:
+2. Create an Anthropic API key in the [Anthropic Console](https://console.anthropic.com/), then set it in the shell that starts FastAPI:
 
    ```powershell
-   $env:GROQ_API_KEY = "your_groq_api_key_here"
+   $env:ANTHROPIC_API_KEY = "your_anthropic_api_key_here"
    ```
 
-   Groq's free developer tier is rate-limited but much faster than Gemini's free tier for this workflow. The default model is `llama-3.3-70b-versatile`; override it before starting FastAPI if needed: `$env:GROQ_MODEL = "llama-3.3-70b-versatile"`. Never commit the key.
+   Live requests use the fixed `claude-sonnet-4-6` model. Never commit the key.
 
 3. Start the API from the project root:
 
@@ -138,7 +138,7 @@ Prerequisites: Python 3.10+ and Node.js 18+.
    npm run dev
    ```
 
-   Open the URL Vite prints (normally `http://localhost:5173`). The seeded candidates are visible even before a live Groq evaluation.
+   Open the URL Vite prints (normally `http://localhost:5173`). The seeded candidates are visible even before a live Claude evaluation.
 
 5. Run the test suite from the project root:
 
@@ -187,12 +187,12 @@ Example `GET /candidates` response:
 - **FastAPI** provides typed, documented multipart and JSON APIs with little framework overhead.
 - **SQLite + SQLAlchemy** makes the project downloadable and durable without an external database service.
 - **pdfplumber** extracts text from text-based PDFs; plain text resumes need no extra parser.
-- **Groq + `llama-3.3-70b-versatile`** performs the two tasks requiring judgment through a fast, free developer tier. `backend/llm_client.py` is the only module that touches the Groq API.
+- **Anthropic Claude `claude-sonnet-4-6`** performs the two tasks requiring judgment. `backend/llm_client.py` is the only module that touches the Anthropic API.
 - **React + Vite** gives a compact dashboard with a fast local development path and no component-library dependency.
 
 ## Reliability and limitations
 
-- Invalid file types and unreadable/empty files receive clear `400` responses. Groq API errors and malformed JSON are retried once, then included as a safe batch evaluation error instead of crashing the server.
+- Invalid file types and unreadable/empty files receive clear `400` responses. Claude API errors and malformed JSON are retried once, then included as a safe batch evaluation error instead of crashing the server.
 - Only text-based PDFs are supported. Scanned image PDFs need OCR, which is intentionally not included to keep dependencies small.
 - LLM scores are decision support, not an automated hiring decision. Add human review, audit logging, bias testing, role-specific rubrics, data retention controls, and access controls before production use.
 - Future improvements: deduplicate uploaded resumes, support OCR and DOCX, add user authentication, isolate jobs into projects, make rubric weights configurable, and add asynchronous batch processing for larger candidate sets.
