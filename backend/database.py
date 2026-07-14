@@ -51,86 +51,87 @@ def get_db() -> Generator[Session, None, None]:
         session.close()
 
 
-def _seed_demo_data(session: Session) -> None:
-    """Insert three compact, pre-scored demo candidates when the database is empty."""
-    if session.scalar(select(JobDescription.id).limit(1)) is not None:
-        return
+DEMO_JOB_FILENAME = "demo-backend-engineer-jd.txt"
+DEMO_JOB_TEXT = (
+    "Senior Backend Engineer. Build Python/FastAPI services, design REST APIs, "
+    "work with PostgreSQL or SQL, Docker, AWS, CI/CD, and React-adjacent product teams. "
+    "Requires 4+ years of backend experience."
+)
 
-    job = JobDescription(
-        source_filename="demo-backend-engineer-jd.txt",
-        text=(
-            "Senior Backend Engineer. Build Python/FastAPI services, design REST APIs, "
-            "work with PostgreSQL or SQL, Docker, AWS, CI/CD, and React-adjacent product teams. "
-            "Requires 4+ years of backend experience."
-        ),
-    )
-    session.add(job)
-    session.flush()
 
-    demo_candidates: list[dict[str, Any]] = [
+def _demo_candidate_payloads() -> list[dict[str, Any]]:
+    """Return three strong, internally consistent candidates for the built-in showcase."""
+    return [
         {
             "source_filename": "maya_patel_demo.txt",
-            "raw_text": "Maya Patel\nmaya@example.com\nSkills: Python, FastAPI, SQL, Docker, AWS, CI/CD\nSenior Backend Engineer, Orbit Labs, 2020-2026\nB.Tech Computer Science, 2020",
-            "name": "Maya Patel",
-            "email": "maya@example.com",
-            "phone": "+91 90000 10001",
-            "skills": ["Python", "FastAPI", "SQL", "Docker", "AWS", "CI/CD"],
+            "raw_text": "Maya Patel\nmaya@example.com\nSkills: Python, FastAPI, PostgreSQL, Docker, AWS, CI/CD, REST APIs\nSenior Backend Engineer, Orbit Labs, 2020-2026\nB.Tech Computer Science, 2020",
+            "name": "Maya Patel", "email": "maya@example.com", "phone": "+91 90000 10001",
+            "skills": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS", "CI/CD", "REST APIs"],
             "experience": [{"title": "Senior Backend Engineer", "company": "Orbit Labs", "dates": "2020-2026"}],
             "education": [{"degree": "B.Tech Computer Science", "year": "2020"}],
-            "score": 9,
-            "justification": "Maya has six years of directly relevant backend experience and covers the core Python, FastAPI, SQL, Docker, AWS, and CI/CD requirements. Her senior engineering background is a strong match for the role.",
-            "matched_skills": ["Python", "FastAPI", "SQL", "Docker", "AWS", "CI/CD"],
+            "score": 10,
+            "justification": "Maya exceeds every core requirement with six years of senior Python backend experience and direct FastAPI, PostgreSQL, Docker, AWS, and CI/CD delivery. Her API design background makes her an immediate, low-risk fit for the role.",
+            "matched_skills": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS", "CI/CD", "REST APIs"],
             "missing_skills": [],
         },
         {
             "source_filename": "noah_kim_demo.txt",
-            "raw_text": "Noah Kim\nnoah@example.com\nSkills: Python, Django, PostgreSQL, Docker, REST APIs\nBackend Developer, Northstar, 2021-2026\nBSc Software Engineering, 2021",
-            "name": "Noah Kim",
-            "email": "noah@example.com",
-            "phone": "+1 555 0102",
-            "skills": ["Python", "Django", "PostgreSQL", "Docker", "REST APIs"],
+            "raw_text": "Noah Kim\nnoah@example.com\nSkills: Python, FastAPI, PostgreSQL, Docker, CI/CD, REST APIs\nBackend Developer, Northstar, 2021-2026\nBSc Software Engineering, 2021",
+            "name": "Noah Kim", "email": "noah@example.com", "phone": "+1 555 0102",
+            "skills": ["Python", "FastAPI", "PostgreSQL", "Docker", "CI/CD", "REST APIs"],
             "experience": [{"title": "Backend Developer", "company": "Northstar", "dates": "2021-2026"}],
             "education": [{"degree": "BSc Software Engineering", "year": "2021"}],
-            "score": 8,
-            "justification": "Noah has five years of relevant Python backend experience and strong REST, PostgreSQL, and Docker exposure. FastAPI, AWS, and CI/CD evidence is not explicit, but his foundation is highly transferable.",
-            "matched_skills": ["Python", "PostgreSQL", "Docker", "REST APIs"],
-            "missing_skills": ["FastAPI", "AWS", "CI/CD"],
+            "score": 9,
+            "justification": "Noah brings five years of directly relevant Python and FastAPI experience, with strong PostgreSQL, Docker, REST API, and CI/CD evidence. AWS delivery is not explicit, but his backend foundation is an excellent match.",
+            "matched_skills": ["Python", "FastAPI", "PostgreSQL", "Docker", "CI/CD", "REST APIs"],
+            "missing_skills": ["AWS"],
         },
         {
             "source_filename": "priya_shah_demo.txt",
-            "raw_text": "Priya Shah\npriya@example.com\nSkills: JavaScript, React, CSS, Figma\nFrontend Developer, Pixel House, 2022-2026\nBA Design, 2022",
-            "name": "Priya Shah",
-            "email": "priya@example.com",
-            "phone": "+91 90000 10003",
-            "skills": ["JavaScript", "React", "CSS", "Figma"],
-            "experience": [{"title": "Frontend Developer", "company": "Pixel House", "dates": "2022-2026"}],
-            "education": [{"degree": "BA Design", "year": "2022"}],
-            "score": 4,
-            "justification": "Priya offers useful React collaboration context but her recent work is frontend-focused. The resume does not show the required Python backend, database, cloud, or container experience.",
-            "matched_skills": ["React"],
-            "missing_skills": ["Python", "FastAPI", "SQL", "Docker", "AWS", "CI/CD"],
+            "raw_text": "Priya Shah\npriya@example.com\nSkills: Python, FastAPI, SQL, Docker, AWS, REST APIs\nBackend Engineer, Pixel House, 2022-2026\nB.Tech Information Technology, 2022",
+            "name": "Priya Shah", "email": "priya@example.com", "phone": "+91 90000 10003",
+            "skills": ["Python", "FastAPI", "SQL", "Docker", "AWS", "REST APIs"],
+            "experience": [{"title": "Backend Engineer", "company": "Pixel House", "dates": "2022-2026"}],
+            "education": [{"degree": "B.Tech Information Technology", "year": "2022"}],
+            "score": 8,
+            "justification": "Priya has four years of practical Python backend experience with FastAPI, SQL, Docker, AWS, and REST APIs. The resume has lighter CI/CD evidence, but she is a strong shortlist candidate with highly relevant delivery skills.",
+            "matched_skills": ["Python", "FastAPI", "SQL", "Docker", "AWS", "REST APIs"],
+            "missing_skills": ["CI/CD"],
         },
     ]
 
-    for candidate_data in demo_candidates:
-        score = candidate_data.pop("score")
-        justification = candidate_data.pop("justification")
-        matched_skills = candidate_data.pop("matched_skills")
-        missing_skills = candidate_data.pop("missing_skills")
-        candidate = Candidate(**candidate_data)
-        session.add(candidate)
-        session.flush()
-        session.add(
-            MatchResult(
-                candidate_id=candidate.id,
-                job_description_id=job.id,
-                score=score,
-                justification=justification,
-                matched_skills=matched_skills,
-                missing_skills=missing_skills,
-            )
+
+def load_demo_showcase(session: Session) -> JobDescription:
+    """Make a fresh showcase active without deleting any non-demo uploads."""
+    job = JobDescription(source_filename=DEMO_JOB_FILENAME, text=DEMO_JOB_TEXT)
+    session.add(job)
+    session.flush()
+    for payload in _demo_candidate_payloads():
+        score = payload.pop("score")
+        justification = payload.pop("justification")
+        matched_skills = payload.pop("matched_skills")
+        missing_skills = payload.pop("missing_skills")
+        candidate = session.scalar(
+            select(Candidate).where(Candidate.source_filename == payload["source_filename"]).limit(1)
         )
+        if candidate is None:
+            candidate = Candidate(**payload)
+            session.add(candidate)
+        else:
+            for field_name, field_value in payload.items():
+                setattr(candidate, field_name, field_value)
+        session.flush()
+        session.add(MatchResult(candidate_id=candidate.id, job_description_id=job.id, score=score,
+                                justification=justification, matched_skills=matched_skills,
+                                missing_skills=missing_skills))
     session.commit()
+    return job
+
+
+def _seed_demo_data(session: Session) -> None:
+    """Insert the showcase only when the database has never received a job description."""
+    if session.scalar(select(JobDescription.id).limit(1)) is None:
+        load_demo_showcase(session)
 
 
 def initialize_database(seed_demo: bool = True) -> None:

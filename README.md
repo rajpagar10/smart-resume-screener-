@@ -2,7 +2,7 @@
 
 Smart Resume Screener is a lightweight, full-stack applicant-screening tool. It accepts PDF or UTF-8 text resumes and a job description, uses Claude Sonnet 4.6 to turn resumes into structured evidence, and produces a recruiter-readable 1–10 fit score with matched and missing skills. The dashboard highlights candidates scoring 7 or higher.
 
-The repository starts with one demo job description and three tiny built-in demo resumes/results, so the ranked dashboard is useful immediately. Live evaluation requires an Anthropic API key with available API credits.
+The repository starts with one demo job description and three high-scoring built-in demo resumes/results, so the ranked dashboard is useful immediately. Live evaluation requires an Anthropic API key with available API credits.
 
 ## Architecture
 
