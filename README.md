@@ -196,3 +196,15 @@ Example `GET /candidates` response:
 - Only text-based PDFs are supported. Scanned image PDFs need OCR, which is intentionally not included to keep dependencies small.
 - LLM scores are decision support, not an automated hiring decision. Add human review, audit logging, bias testing, role-specific rubrics, data retention controls, and access controls before production use.
 - Future improvements: deduplicate uploaded resumes, support OCR and DOCX, add user authentication, isolate jobs into projects, make rubric weights configurable, and add asynchronous batch processing for larger candidate sets.
+
+## Screenshot
+
+<img width="1582" height="912" alt="Screenshot 2026-07-15 000009" src="https://github.com/user-attachments/assets/ae1fe484-955b-4a03-bc66-c19ee653c5ac" />
+
+# Demo Video
+
+https://github.com/user-attachments/assets/8437eefb-7463-4144-98e8-6c34964367f2
+
+
+
+
